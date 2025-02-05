@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Button } from "@/components/atoms/Button";
-import useCartStore from "@/store/useCartStore";
+import { Button } from "../../components/atoms/Button";
+import useCartStore from "../../store/useCartStore";
 import { useState } from "react";
 import { initializeRazorpay, createRazorpayOrder } from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";

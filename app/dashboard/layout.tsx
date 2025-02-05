@@ -7,11 +7,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  // const user = await getCurrentUser();
 
-  if (!user) {
-    redirect("/auth/login");
-  }
+  // if (!user) {
+  //   redirect("/auth/login");
+  // }
+  const user = {
+    role: "user",
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50">

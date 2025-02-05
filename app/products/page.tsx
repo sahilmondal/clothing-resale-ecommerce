@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ProductGrid } from "@/components/molecules/ProductGrid";
-import { ProductFilters } from "@/components/molecules/ProductFilters";
-import { Product, ProductCategory, ProductCondition } from "@/types/product";
-import { Button } from "@/components/atoms/Button";
+import { ProductGrid } from "../../components/molecules/ProductGrid";
+import { ProductFilters } from "../../components/molecules/ProductFilters";
+import {
+  Product,
+  ProductCategory,
+  ProductCondition,
+} from "../../types/product";
+import { Button } from "../../components/atoms/Button";
 
 // Demo data - Replace with API call
 const products: Product[] = [
@@ -13,7 +17,7 @@ const products: Product[] = [
     title: "Vintage Denim Jacket",
     description: "Classic vintage denim jacket in excellent condition",
     price: 2499,
-    images: ["https://images.unsplash.com/photo-1606822350112-b9e3caea2d5e"],
+    images: ["https://images.unsplash.com/photo-1608256246200-53e635b5b65f"],
     category: "women-clothing",
     condition: "excellent",
     size: "M",

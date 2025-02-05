@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { Button } from "@/components/atoms/Button";
-import useWishlistStore from "@/store/useWishlistStore";
-import { Product } from "@/types/product";
+import { Button } from "../../components/atoms/Button";
+import useWishlistStore from "../../store/useWishlistStore";
+import { Product } from "../../types/product";
 import Link from "next/link";
 
 export default function WishlistPage() {
