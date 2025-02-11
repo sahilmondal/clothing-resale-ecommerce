@@ -26,7 +26,7 @@ function storeOTP(phone: string, otp: string): void {
 // Send OTP (simulated)
 export async function sendOTP(
   phone: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; otp?: string }> {
   try {
     // Validate phone number
     if (!phone.match(/^\d{10}$/)) {
@@ -36,21 +36,26 @@ export async function sendOTP(
       };
     }
 
-    const otp = generateOTP();
-    storeOTP(phone, otp);
+    try {
+      const otp = generateOTP();
+      storeOTP(phone, otp);
+      // prompt(`OTP for ${phone}: ${otp}`);
+      console.log(`[DEV] OTP for ${phone}: ${otp}`);
+      // In a real app, you would send the OTP via SMS here
 
-    // In a real app, you would send the OTP via SMS here
-    console.log(`[DEV] OTP for ${phone}: ${otp}`);
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    return { success: true };
+      return { success: true, otp: otp };
+    } catch (e) {
+      throw new Error("Failed to generate OTP - " + e);
+    }
   } catch (error) {
     console.error("Error sending OTP:", error);
     return {
       success: false,
       error: "Failed to send OTP. Please try again.",
+      otp: "none",
     };
   }
 }

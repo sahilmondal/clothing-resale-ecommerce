@@ -48,8 +48,10 @@ export default function LoginPage() {
 
       if (!result.success) {
         setErrorMsg(result.error || "Failed to send OTP");
+        alert("Failed to send OTP");
         return;
       }
+      alert(`OTP for ${phone} is : ${result.otp}`);
 
       setOtpSent(true);
       startResendTimer();
@@ -161,12 +163,14 @@ export default function LoginPage() {
           <div>
             <Button
               onClick={otpSent ? handleVerifyOTP : handleSendOTP}
-              className="w-full"
+              className="w-full disabled:opacity-50"
               disabled={
                 isLoading || (otpSent ? otp.length !== 6 : phone.length !== 10)
               }
             >
-              {isLoading
+              {!otpSent && phone.length !== 10
+                ? "Enter 10 digit number"
+                : isLoading
                 ? "Processing..."
                 : otpSent
                 ? "Verify OTP"

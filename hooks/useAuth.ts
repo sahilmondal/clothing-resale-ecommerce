@@ -21,7 +21,9 @@ export function useAuth() {
   } = useAuthStore();
 
   const sendOTP = useCallback(
-    async (phone: string): Promise<{ success: boolean; error?: string }> => {
+    async (
+      phone: string
+    ): Promise<{ success: boolean; error?: string; otp?: string }> => {
       try {
         const response = await fetch("/api/auth/send-otp", {
           method: "POST",
@@ -37,7 +39,7 @@ export function useAuth() {
           return { success: false, error: data.error };
         }
 
-        return { success: true };
+        return { success: true, otp: data.otp };
       } catch (error) {
         console.error("Error sending OTP:", error);
         return {

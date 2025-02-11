@@ -87,7 +87,7 @@ The application will be available at `http://localhost:3000`.
 
 ## Project Structure
 
-- `/app` - Next.js 14 app directory with routes and API endpoints
+- `/app` - Next.js 15 app directory with routes and API endpoints
 - `/components` - React components organized using Atomic Design principles
   - `/atoms` - Basic building blocks (buttons, inputs)
   - `/molecules` - Combinations of atoms (forms, cards)
@@ -103,8 +103,8 @@ The application will be available at `http://localhost:3000`.
 
 ### Authentication
 
-- Uses NextAuth.js for authentication
-- Protected routes with role-based access
+- Uses JWT for authentication
+- Protected routes
 - Custom auth hooks for easy access to user state
 
 ### Cart & Wishlist
@@ -124,12 +124,6 @@ The application will be available at `http://localhost:3000`.
 - Advanced filtering and sorting options
 - Responsive image gallery
 - Real-time stock updates
-
-### Seller Dashboard
-
-- Complete seller onboarding flow
-- Product management interface
-- Sales analytics and reporting
 
 ## Contributing
 
