@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // TODO: Replace with actual database implementation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const users = new Map<string, any>();
 
 const registerSchema = z.object({

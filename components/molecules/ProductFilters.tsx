@@ -59,6 +59,7 @@ export function ProductFilters({
 }: ProductFiltersProps) {
   const [filters, setFilters] = useState(initialFilters);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFilterChange = (key: string, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);

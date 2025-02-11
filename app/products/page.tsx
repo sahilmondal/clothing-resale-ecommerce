@@ -3,33 +3,9 @@
 import { useState } from "react";
 import { ProductGrid } from "../../components/molecules/ProductGrid";
 import { ProductFilters } from "../../components/molecules/ProductFilters";
-import {
-  Product,
-  ProductCategory,
-  ProductCondition,
-} from "../../types/product";
+import { ProductCategory, ProductCondition } from "../../types/product";
 import { Button } from "../../components/atoms/Button";
-
-// Demo data - Replace with API call
-const products: Product[] = [
-  {
-    id: "1",
-    title: "Vintage Denim Jacket",
-    description: "Classic vintage denim jacket in excellent condition",
-    price: 2499,
-    images: ["https://images.unsplash.com/photo-1608256246200-53e635b5b65f"],
-    category: "women-clothing",
-    condition: "excellent",
-    size: "M",
-    brand: "Levis",
-    color: "Blue",
-    sellerId: "demo-seller",
-    status: "active",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  // Add more demo products here
-];
+import { products } from "@/data/products";
 
 interface Filters {
   category?: ProductCategory;

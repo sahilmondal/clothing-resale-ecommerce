@@ -13,14 +13,14 @@ export const Footer = () => {
         { label: "Kids", href: "/products?category=kids" },
       ],
     },
-    {
-      title: "Sell",
-      links: [
-        { label: "Start Selling", href: "/sell" },
-        { label: "Seller Guidelines", href: "/seller-guidelines" },
-        { label: "Seller Dashboard", href: "/dashboard/seller" },
-      ],
-    },
+    // {
+    //   title: "Sell",
+    //   links: [
+    //     { label: "Start Selling", href: "/sell" },
+    //     { label: "Seller Guidelines", href: "/seller-guidelines" },
+    //     { label: "Seller Dashboard", href: "/dashboard/seller" },
+    //   ],
+    // },
     {
       title: "About",
       links: [

@@ -2,17 +2,37 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "../../components/atoms/Button";
 import useCartStore from "../../store/useCartStore";
-import { useState } from "react";
-import { initializeRazorpay, createRazorpayOrder } from "@/lib/razorpay";
+import { useEffect, useState } from "react";
+import {
+  initializeRazorpayCheckout,
+  createRazorpayOrder,
+  verifyPayment,
+} from "@/lib/razorpay";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function CartPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
+  const {
+    carts,
+    currentUserId,
+    setCurrentUser,
+    removeItem,
+    updateQuantity,
+    totalAmount,
+  } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setCurrentUser(user.phone);
+    }
+  }, [user, setCurrentUser]);
+
+  const items = currentUserId ? carts[currentUserId] || [] : [];
 
   const handleCheckout = async () => {
     try {
@@ -22,33 +42,38 @@ export default function CartPage() {
       }
 
       setIsProcessing(true);
-      const totalAmount = getTotalPrice();
+      const total = totalAmount();
 
       // Create Razorpay order
-      const { orderId } = await createRazorpayOrder(totalAmount);
+      const orderDetails = await createRazorpayOrder(total);
 
       // Initialize Razorpay
-      const razorpay = await initializeRazorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-        amount: totalAmount * 100, // Convert to smallest currency unit
-        currency: "INR",
-        name: "ClothResale",
-        description: "Purchase from ClothResale",
-        orderId,
-        prefill: {
+      await initializeRazorpayCheckout({
+        orderDetails,
+        userDetails: {
           name: user.name || "",
           email: user.email || "",
-          contact: "", // TODO: Add phone number to user profile
+          contact: user.phone,
         },
-        notes: {
-          userId: user.email!,
+        onSuccess: async (response) => {
+          try {
+            // Verify the payment
+            const verificationResult = await verifyPayment(response);
+            if (verificationResult.success) {
+              router.push("/checkout/success");
+            } else {
+              throw new Error("Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+            // TODO: Show error message to user
+          }
         },
-        theme: {
-          color: "#0284c7", // primary-600
+        onError: (error) => {
+          console.error("Payment failed:", error);
+          // TODO: Show error message to user
         },
       });
-
-      razorpay.open();
     } catch (error) {
       console.error("Checkout error:", error);
       // TODO: Show error message to user
@@ -67,7 +92,7 @@ export default function CartPage() {
           Start shopping to add items to your cart
         </p>
         <Button asChild>
-          <a href="/products">Browse Products</a>
+          <Link href="/products">Browse Products</Link>
         </Button>
       </div>
     );
@@ -88,7 +113,7 @@ export default function CartPage() {
               >
                 <div className="relative w-24 h-24">
                   <Image
-                    src={item.image}
+                    src={item?.image || "/images/placeholder-image.png"}
                     alt={item.title}
                     fill
                     className="object-cover rounded"
@@ -105,9 +130,7 @@ export default function CartPage() {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      updateQuantity(item.productId, item.quantity - 1)
-                    }
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     className="p-1 text-gray-500 hover:text-gray-700"
                     disabled={item.quantity <= 1}
                   >
@@ -115,9 +138,7 @@ export default function CartPage() {
                   </button>
                   <span className="w-8 text-center">{item.quantity}</span>
                   <button
-                    onClick={() =>
-                      updateQuantity(item.productId, item.quantity + 1)
-                    }
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="p-1 text-gray-500 hover:text-gray-700"
                   >
                     +
@@ -125,7 +146,7 @@ export default function CartPage() {
                 </div>
 
                 <button
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item.id)}
                   className="p-2 text-gray-400 hover:text-red-500"
                 >
                   <span className="sr-only">Remove</span>
@@ -158,7 +179,7 @@ export default function CartPage() {
             <div className="space-y-4">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>₹{getTotalPrice().toLocaleString()}</span>
+                <span>₹{totalAmount().toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Shipping</span>
@@ -171,7 +192,7 @@ export default function CartPage() {
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex justify-between font-medium text-gray-900">
                   <span>Total</span>
-                  <span>₹{getTotalPrice().toLocaleString()}</span>
+                  <span>₹{totalAmount().toLocaleString()}</span>
                 </div>
               </div>
             </div>

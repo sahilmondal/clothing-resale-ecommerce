@@ -1,63 +1,119 @@
-"use client";
+import { useCallback } from "react";
+import { redirect } from "next/navigation";
+import useAuthStore, { User } from "@/store/useAuthStore";
 
-import { useSession, signIn, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+interface AuthResponse {
+  success: boolean;
+  error?: string;
+  token?: string;
+  user?: User;
+}
 
 export function useAuth() {
-  const { data: session, status, update } = useSession();
-  const router = useRouter();
+  // const router = useRouter();
+  const {
+    user,
+    isAuthenticated,
+    setUser,
+    setSessionToken,
+    logout: logoutStore,
+    updateUserProfile,
+  } = useAuthStore();
 
-  const login = async (email: string, password: string) => {
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+  const sendOTP = useCallback(
+    async (phone: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const response = await fetch("/api/auth/send-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ phone }),
+        });
 
-      if (result?.error) {
-        throw new Error(result.error);
+        const data = await response.json();
+
+        if (!data.success) {
+          return { success: false, error: data.error };
+        }
+
+        return { success: true };
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        return {
+          success: false,
+          error: "Failed to send OTP. Please try again.",
+        };
       }
+    },
+    []
+  );
 
-      router.push("/dashboard");
-      return result;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
-  };
+  const verifyOTP = useCallback(
+    async (
+      phone: string,
+      otp: string
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const response = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ phone, otp }),
+        });
 
-  const loginWithProvider = async (provider: string) => {
-    try {
-      await signIn(provider, { callbackUrl: "/dashboard" });
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      throw error;
-    }
-  };
+        const data: AuthResponse = await response.json();
 
-  const logout = async () => {
-    try {
-      await signOut({ callbackUrl: "/" });
-    } catch (error) {
-      console.error("Logout error:", error);
-      throw error;
-    }
-  };
+        if (!data.success || !data.token || !data.user) {
+          return { success: false, error: data.error || "Verification failed" };
+        }
 
-  const isSeller = session?.user?.role === "seller";
-  const isAdmin = session?.user?.role === "admin";
+        // Store session token and user data
+        setSessionToken(data.token);
+        setUser(data.user);
+
+        return { success: true };
+      } catch (error) {
+        console.error("Error verifying OTP:", error);
+        return {
+          success: false,
+          error: "Failed to verify OTP. Please try again.",
+        };
+      }
+    },
+    [setSessionToken, setUser]
+  );
+
+  const updateProfile = useCallback(
+    async (
+      profile: Partial<User>
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        await updateUserProfile(profile);
+        return { success: true };
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        return {
+          success: false,
+          error: "Failed to update profile. Please try again.",
+        };
+      }
+    },
+    [updateUserProfile]
+  );
+
+  const handleLogout = useCallback(() => {
+    logoutStore();
+    redirect("/auth/login");
+  }, [logoutStore]);
 
   return {
-    session,
-    status,
-    user: session?.user,
-    isAuthenticated: !!session?.user,
-    isSeller,
-    isAdmin,
-    login,
-    loginWithProvider,
-    logout,
-    updateSession: update,
+    user,
+    isAuthenticated,
+    sendOTP,
+    verifyOTP,
+    updateProfile,
+    logout: handleLogout,
   };
 }

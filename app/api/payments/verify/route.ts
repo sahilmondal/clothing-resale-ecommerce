@@ -1,38 +1,46 @@
 import { NextResponse } from "next/server";
+
 import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+    // Check authentication
 
-    // Verify signature
-    const text = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const generated_signature = crypto
+    // Get payment details from request body
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      await request.json();
+
+    // Verify the payment signature
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(text)
+      .update(sign)
       .digest("hex");
 
-    if (generated_signature !== razorpay_signature) {
+    // Check if the signatures match
+    if (expectedSign !== razorpay_signature) {
       return NextResponse.json(
-        { message: "Invalid payment signature" },
+        { error: "Invalid payment signature" },
         { status: 400 }
       );
     }
 
-    // TODO: Update order status in database
-    // TODO: Update product status if payment is successful
-    // TODO: Send confirmation email to buyer and seller
+    // At this point, the payment is verified
+    // You would typically:
+    // 1. Update the order status in your database
+    // 2. Send confirmation email
+    // 3. Update inventory
+    // 4. Add reward points
+    // 5. Clear the user's cart
 
     return NextResponse.json({
+      success: true,
       message: "Payment verified successfully",
-      orderId: razorpay_order_id,
-      paymentId: razorpay_payment_id,
     });
   } catch (error) {
-    console.error("Payment verification error:", error);
+    console.error("Error verifying payment:", error);
     return NextResponse.json(
-      { message: "Payment verification failed" },
+      { error: "Failed to verify payment" },
       { status: 500 }
     );
   }

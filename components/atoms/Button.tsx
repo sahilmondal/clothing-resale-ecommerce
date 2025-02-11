@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   ButtonHTMLAttributes,
   ReactNode,
@@ -54,6 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild && children) {
       const child = children as React.ReactElement;
       return cloneElement(child, {
+        // @ts-ignore
         className: twMerge(classes, child.props.className),
         ref,
         ...props,

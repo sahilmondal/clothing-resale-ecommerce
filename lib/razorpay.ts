@@ -1,116 +1,145 @@
+import { loadScript } from "@/lib/utils";
+
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: RazorpayConstructor;
   }
 }
 
-export interface RazorpayConfig {
+interface RazorpayConstructor {
+  new (options: RazorpayOptions): RazorpayInstance;
+}
+
+interface RazorpayInstance {
+  open(): void;
+}
+
+interface RazorpayOptions {
   key: string;
   amount: number;
   currency: string;
   name: string;
   description: string;
-  orderId: string;
+  order_id: string;
   prefill: {
     name: string;
     email: string;
-    contact: string;
+    contact?: string;
   };
-  notes: {
-    [key: string]: string;
-  };
-  theme: {
-    color: string;
+  handler: (response: PaymentSuccessResponse) => void;
+  modal: {
+    ondismiss: () => void;
   };
 }
 
-export const loadRazorpayScript = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
+export interface RazorpayOrder {
+  id: string;
+  amount: number;
+  currency: string;
+  receipt: string;
+}
 
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
+export interface PaymentSuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
 
-    script.onload = () => {
-      resolve(true);
-    };
+export interface CreateOrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+}
 
-    script.onerror = () => {
-      resolve(false);
-    };
-
-    document.body.appendChild(script);
-  });
+// Function to load Razorpay script
+export const loadRazorpayScript = async (): Promise<void> => {
+  return loadScript("https://checkout.razorpay.com/v1/checkout.js");
 };
 
-export const initializeRazorpay = async (config: RazorpayConfig) => {
-  const isLoaded = await loadRazorpayScript();
+// Function to create order on the server
+export const createRazorpayOrder = async (
+  amount: number
+): Promise<CreateOrderResponse> => {
+  const response = await fetch("/api/payments/create-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ amount }),
+  });
 
-  if (!isLoaded) {
-    throw new Error("Failed to load Razorpay SDK");
+  if (!response.ok) {
+    throw new Error("Failed to create order");
   }
 
-  return new window.Razorpay({
-    ...config,
-    handler: async (response: any) => {
-      try {
-        // Verify payment
-        const result = await fetch("/api/payments/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-          }),
-        });
-
-        if (!result.ok) {
-          throw new Error("Payment verification failed");
-        }
-
-        // Handle success (redirect to success page, update order status, etc.)
-        window.location.href = `/orders/success?orderId=${config.orderId}`;
-      } catch (error) {
-        console.error("Payment verification error:", error);
-        // Handle error (redirect to failure page, show error message, etc.)
-        window.location.href = `/orders/failed?orderId=${config.orderId}`;
-      }
-    },
-    modal: {
-      ondismiss: () => {
-        console.log("Payment cancelled");
-      },
-    },
-  });
+  return response.json();
 };
 
-export const createRazorpayOrder = async (
-  amount: number,
-  currency: string = "INR"
-) => {
+// Function to verify payment on the server
+export const verifyPayment = async (
+  paymentData: PaymentSuccessResponse
+): Promise<{ success: boolean }> => {
+  const response = await fetch("/api/payments/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(paymentData),
+  });
+
+  if (!response.ok) {
+    throw new Error("Payment verification failed");
+  }
+
+  return response.json();
+};
+
+// Function to initialize Razorpay checkout
+export const initializeRazorpayCheckout = async ({
+  orderDetails,
+  userDetails,
+  onSuccess,
+  onError,
+}: {
+  orderDetails: CreateOrderResponse;
+  userDetails: {
+    name: string;
+    email: string;
+    contact?: string;
+  };
+  onSuccess: (response: PaymentSuccessResponse) => void;
+  onError: (error: Error) => void;
+}): Promise<void> => {
   try {
-    const response = await fetch("/api/payments/create-order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    await loadRazorpayScript();
+
+    const options: RazorpayOptions = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+      amount: orderDetails.amount,
+      currency: orderDetails.currency,
+      name: "Clothing Resale",
+      description: "Purchase Payment",
+      order_id: orderDetails.orderId,
+      prefill: {
+        name: userDetails.name,
+        email: userDetails.email,
+        contact: userDetails.contact,
       },
-      body: JSON.stringify({ amount, currency }),
-    });
+      handler: function (response: PaymentSuccessResponse) {
+        onSuccess(response);
+      },
+      modal: {
+        ondismiss: function () {
+          onError(new Error("Payment cancelled by user"));
+        },
+      },
+    };
 
-    if (!response.ok) {
-      throw new Error("Failed to create order");
-    }
-
-    return await response.json();
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
   } catch (error) {
-    console.error("Create order error:", error);
-    throw error;
+    onError(
+      error instanceof Error ? error : new Error("Failed to initialize payment")
+    );
   }
 };

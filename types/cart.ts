@@ -2,10 +2,12 @@ import { Product } from "./product";
 
 export interface CartItem {
   id: string;
+  description?: string;
   productId: string;
   title: string;
   price: number;
   image: string;
+  images: string[];
   size: string;
   quantity: number;
 }

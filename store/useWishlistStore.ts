@@ -1,78 +1,112 @@
-"use client";
-
+import { Product } from "@/types/product";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { WishlistItem, WishlistStore } from "../types/wishlist";
-import { Product } from "../types/product";
-import useCartStore from "./useCartStore";
+
+export interface WishlistItem extends Product {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
+  size: string;
+  quantity: number;
+}
+
+interface WishlistStore {
+  wishlists: Record<string, WishlistItem[]>; // Map of userId (phone) to wishlist items
+  currentUserId: string | null;
+  setCurrentUser: (userId: string) => void;
+  addItem: (item: WishlistItem) => void;
+  removeItem: (id: string) => void;
+  clearWishlist: () => void;
+  isInWishlist: (id: string) => boolean; // Add this function
+}
+
+// Demo data with phone number as key
+const demoWishlists: Record<string, WishlistItem[]> = {
+  // "9831737396": [
+  //   {
+  //     id: "w1",
+  //     title: "Premium Wool Coat",
+  //     price: 5999,
+  //     image:
+  //       "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=300",
+  //     size: "M",
+  //   },
+  //   {
+  //     id: "w2",
+  //     title: "Designer Silk Scarf",
+  //     price: 1299,
+  //     image:
+  //       "https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?w=300",
+  //     size: "One Size",
+  //   },
+  //   {
+  //     id: "w3",
+  //     title: "Leather Chelsea Boots",
+  //     price: 4499,
+  //     image:
+  //       "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=300",
+  //     size: "42",
+  //   },
+  // ],
+};
 
 const useWishlistStore = create<WishlistStore>()(
   persist(
     (set, get) => ({
-      items: [],
-
-      addItem: (product: Product) => {
+      wishlists: demoWishlists,
+      currentUserId: null,
+      setCurrentUser: (userId) => set({ currentUserId: userId }),
+      addItem: (item) =>
         set((state) => {
-          if (state.items.some((item) => item.productId === product.id)) {
+          if (!state.currentUserId) return state;
+
+          const userWishlist = state.wishlists[state.currentUserId] || [];
+          if (userWishlist.some((i) => i.id === item.id)) {
             return state;
           }
 
-          const newItem: WishlistItem = {
-            id: crypto.randomUUID(),
-            productId: product.id,
-            title: product.title,
-            price: product.price,
-            image: product.images[0],
-            size: product.size,
-            addedAt: new Date().toISOString(),
+          return {
+            wishlists: {
+              ...state.wishlists,
+              [state.currentUserId]: [...userWishlist, item],
+            },
           };
+        }),
+      removeItem: (id) =>
+        set((state) => {
+          if (!state.currentUserId) return state;
 
-          return { items: [...state.items, newItem] };
-        });
-      },
-
-      removeItem: (productId: string) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.productId !== productId),
-        }));
-      },
-
-      clearWishlist: () => {
-        set({ items: [] });
-      },
-
-      isInWishlist: (productId: string) => {
-        const state = get();
-        return state.items.some((item) => item.productId === productId);
-      },
-
-      moveToCart: (productId: string) => {
-        const state = get();
-        const item = state.items.find((item) => item.productId === productId);
-
-        if (item) {
-          // Create a mock product object from wishlist item
-          const product: Product = {
-            id: item.productId,
-            title: item.title,
-            price: item.price,
-            images: [item.image],
-            size: item.size,
-            // Add required fields with default values
-            description: "",
-            category: "women-clothing",
-            condition: "good",
-            brand: "",
-            color: "",
-            sellerId: "",
-            status: "active",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+          return {
+            wishlists: {
+              ...state.wishlists,
+              [state.currentUserId]:
+                state.wishlists[state.currentUserId]?.filter(
+                  (item) => item.id !== id
+                ) || [],
+            },
           };
+        }),
+      clearWishlist: () =>
+        set((state) => {
+          if (!state.currentUserId) return state;
 
-          useCartStore.getState().addItem(product, 1);
-          get().removeItem(productId);
-        }
+          return {
+            wishlists: {
+              ...state.wishlists,
+              [state.currentUserId]: [],
+            },
+          };
+        }),
+      isInWishlist: (id) => {
+        const state = get();
+        if (!state.currentUserId) return false;
+
+        return (
+          state.wishlists[state.currentUserId]?.some(
+            (item) => item.id === id
+          ) || false
+        );
       },
     }),
     {

@@ -1,28 +1,30 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 
-interface DashboardLinkProps {
+export interface DashboardLinkProps {
   href: string;
-  exact?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
+  icon?: ReactNode;
+  isActive?: boolean;
 }
 
-export function DashboardLink({ href, exact, children }: DashboardLinkProps) {
-  const pathname = usePathname();
-  const isActive = exact ? pathname === href : pathname.startsWith(href);
-
+export function DashboardLink({
+  href,
+  children,
+  icon,
+  isActive = false,
+}: DashboardLinkProps) {
   return (
     <Link
       href={href}
-      className={`block px-4 py-2 rounded-md text-sm font-medium ${
+      className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
         isActive
-          ? "bg-primary-50 text-primary-700"
+          ? "bg-primary-50 text-primary-600"
           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
       }`}
     >
-      {children}
+      {icon && <span className="flex-shrink-0">{icon}</span>}
+      <span>{children}</span>
     </Link>
   );
 }

@@ -1,23 +1,12 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const config: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/**",
-        search: "",
-      },
-      {
-        protocol: "https",
-        hostname: "unsplash.com",
-        pathname: "/**",
-      },
+    domains: [
+      "api.qrserver.com",
+      "images.unsplash.com", // For demo product images
     ],
   },
 };
 
-export default nextConfig;
+export default config;
