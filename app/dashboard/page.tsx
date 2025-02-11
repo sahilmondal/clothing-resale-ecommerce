@@ -29,7 +29,7 @@ export default function DashboardPage() {
   }, [user, fetchOrders, setCurrentUser]);
 
   const recentOrders = orders.slice(0, 3);
-  const wishlistItems = currentUserId ? wishlists[currentUserId] : wishlists["1234"];
+  const wishlistItems =  wishlists[currentUserId] ?wishlists[currentUserId]: wishlists["1234"];
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Section */}
