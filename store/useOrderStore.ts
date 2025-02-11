@@ -28,7 +28,7 @@ interface OrderStore {
 const demoOrders: Order[] = [
   {
     id: "1234",
-    userId: "9831737396", // Changed from email to phone
+    userId: "1234", // Changed from email to phone
     items: [
       {
         id: "p1",
@@ -99,7 +99,7 @@ const useOrderStore = create<OrderStore>((set) => ({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       set({
-        orders: demoOrders.filter((order) => order.userId === params.userId),
+        orders: demoOrders.filter((order) => order.userId === "1234"),
         isLoading: false,
       });
     } catch (error) {
