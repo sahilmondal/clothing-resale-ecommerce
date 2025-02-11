@@ -23,32 +23,17 @@ interface WishlistStore {
 
 // Demo data with phone number as key
 const demoWishlists: Record<string, WishlistItem[]> = {
-  // "9831737396": [
-  //   {
-  //     id: "w1",
-  //     title: "Premium Wool Coat",
-  //     price: 5999,
-  //     image:
-  //       "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=300",
-  //     size: "M",
-  //   },
-  //   {
-  //     id: "w2",
-  //     title: "Designer Silk Scarf",
-  //     price: 1299,
-  //     image:
-  //       "https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?w=300",
-  //     size: "One Size",
-  //   },
-  //   {
-  //     id: "w3",
-  //     title: "Leather Chelsea Boots",
-  //     price: 4499,
-  //     image:
-  //       "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=300",
-  //     size: "42",
-  //   },
-  // ],
+   "1234": [
+    {
+      id: "w1",
+      title: "Premium Wool Coat",
+       price: 5999,
+       image:
+    "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=300",
+      size: "M",
+    },
+  
+   ],
 };
 
 const useWishlistStore = create<WishlistStore>()(
