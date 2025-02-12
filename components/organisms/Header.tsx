@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Button } from "../atoms/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import useCartStore from "@/store/useCartStore";
-
+import { AnimatePresence, motion } from "motion/react";
 export const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -121,57 +121,174 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button with animated icon */}
           <button
             onClick={toggleMenu}
-            className="md:hidden text-gray-600 hover:text-gray-900"
+            className="md:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg transition-colors"
+            aria-expanded={isMenuOpen}
+            aria-label="Toggle menu"
           >
-            <MenuIcon className="w-6 h-6" />
+            <div className="w-6 h-6 relative">
+              <span
+                className={`absolute h-0.5 w-full bg-current transform transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "rotate-45 translate-y-2.5" : "translate-y-0"
+                }`}
+              />
+              <span
+                className={`absolute h-0.5 w-full bg-current transform transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "opacity-0" : "opacity-100"
+                } top-2.5`}
+              />
+              <span
+                className={`absolute h-0.5 w-full bg-current transform transition-all duration-300 ease-in-out ${
+                  isMenuOpen ? "-rotate-45 translate-y-2.5" : "translate-y-5"
+                }`}
+              />
+            </div>
           </button>
-        </div>
 
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4">
-            <nav className="flex flex-col space-y-4">
-              <Link
-                href="/products"
-                className="text-gray-600 hover:text-gray-900"
+          {/* Mobile menu with animation */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                onClick={toggleMenu}
               >
-                Shop
-              </Link>
+                <motion.div
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  className="fixed right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b">
+                      <span className="text-xl font-semibold">Menu</span>
+                      <button
+                        onClick={toggleMenu}
+                        className="p-2 -mr-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
 
-              <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                About
-              </Link>
+                    {/* Navigation Items */}
+                    <motion.nav
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="flex-1 overflow-y-auto"
+                    >
+                      <div className="px-4 py-6 space-y-6">
+                        {/* User Section */}
 
-              <Link href="/cart" className="text-gray-600 hover:text-gray-900">
-                Cart
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Dashboard
-                  </Link>
+                        {!isAuthenticated && (
+                          <div className="mb-8">
+                            <Button
+                              variant="primary"
+                              size="lg"
+                              asChild
+                              className="w-full"
+                            >
+                              <Link
+                                href="/auth/login"
+                                onClick={() => toggleMenu()}
+                              >
+                                Sign In
+                              </Link>
+                            </Button>
+                          </div>
+                        )}
+                        {/* Navigation Links */}
+                        <div className="space-y-1">
+                          <Link
+                            href="/products"
+                            className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                            onClick={toggleMenu}
+                          >
+                            Shop
+                          </Link>
+                          <Link
+                            href="/cart"
+                            className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                            onClick={toggleMenu}
+                          >
+                            Cart ({mounted ? totalItems() : 0})
+                          </Link>
 
-                  <button
-                    onClick={() => logout()}
-                    className="text-left text-gray-600 hover:text-gray-900"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <Button variant="primary" size="sm" asChild>
-                  <Link href="/auth/login">Sign In</Link>
-                </Button>
-              )}
-            </nav>
-          </div>
-        )}
+                          <>
+                            <Link
+                              href="/dashboard"
+                              className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                              onClick={toggleMenu}
+                            >
+                              Dashboard
+                            </Link>
+                            <Link
+                              href="/dashboard/settings"
+                              className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                              onClick={toggleMenu}
+                            >
+                              Settings
+                            </Link>
+                            <Link
+                              href="/dashboard/wishlist"
+                              className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                              onClick={toggleMenu}
+                            >
+                              Wishlist
+                            </Link>
+                          </>
+
+                          <Link
+                            href="/about"
+                            className="block px-4 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg"
+                            onClick={toggleMenu}
+                          >
+                            About
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.nav>
+
+                    {/* Footer */}
+                    {isAuthenticated && (
+                      <div className="border-t p-4">
+                        <button
+                          onClick={() => {
+                            logout();
+                            toggleMenu();
+                          }}
+                          className="w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg text-center"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   );
@@ -212,6 +329,7 @@ const CartIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MenuIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}

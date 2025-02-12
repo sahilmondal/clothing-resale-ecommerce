@@ -1,6 +1,6 @@
 // "use client";
 
-// import Link from "next/link";
+// import { Link } from 'next-view-transitions';
 // import { useEffect } from "react";
 // import { useRouter } from "next/navigation";
 // import { Button } from "@/components/atoms/Button";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import useOrderStore from "@/store/useOrderStore";
@@ -29,7 +29,9 @@ export default function DashboardPage() {
   }, [user, fetchOrders, setCurrentUser]);
 
   const recentOrders = orders.slice(0, 3);
-  const wishlistItems =  wishlists[currentUserId] ?  wishlists[currentUserId] : wishlists["1234"];
+  const wishlistItems = currentUserId
+    ? wishlists[currentUserId]
+    : wishlists["1234"];
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Section */}
@@ -51,7 +53,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="text-3xl font-bold text-gray-900 mb-2">
-            {orders.length}
+            {orders?.length}
           </div>
           <p className="text-gray-600 text-sm">Total orders placed</p>
         </div>
@@ -67,7 +69,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="text-3xl font-bold text-gray-900 mb-2">
-            {wishlistItems.length}
+            {wishlistItems?.length ? wishlistItems?.length : "0"}
           </div>
           <p className="text-gray-600 text-sm">Saved items</p>
         </div>

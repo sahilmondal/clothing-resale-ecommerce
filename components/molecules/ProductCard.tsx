@@ -3,17 +3,20 @@
 
 import { Product } from "../../types/product";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Button } from "../atoms/Button";
 import useCartStore from "../../store/useCartStore";
 import useWishlistStore from "../../store/useWishlistStore";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { isAuthenticated } = useAuth();
+
   const { addItem: addToCart } = useCartStore();
   const {
     addItem: addToWishlist,
@@ -23,6 +26,10 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      alert("Please login to add items to cart");
+      return;
+    }
     setIsAdding(true);
     // @ts-ignore
 

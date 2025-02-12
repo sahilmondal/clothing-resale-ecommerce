@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();

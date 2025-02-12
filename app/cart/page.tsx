@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Button } from "../../components/atoms/Button";
 import useCartStore from "../../store/useCartStore";
 import { useEffect, useState } from "react";

@@ -8,7 +8,7 @@ import { Button } from "@/components/atoms/Button";
 import { useAuth } from "@/hooks/useAuth";
 
 const profileSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
+  name: z.string().min(1, "Full name is required"),
   phone: z.string().min(10, "Invalid phone number"),
   addressLine1: z.string().min(1, "Address is required"),
   addressLine2: z.string().optional(),
@@ -35,7 +35,7 @@ export default function SettingsPage() {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: user?.name || "",
+      name: user?.name || "",
       email: user?.email || "",
       phone: user?.phone || "",
       addressLine1: user?.addressLine1 || "",
@@ -88,13 +88,11 @@ export default function SettingsPage() {
           </label>
           <input
             type="text"
-            {...register("fullName")}
+            {...register("name")}
             className="w-full px-4 py-2 border rounded-lg focus:ring-primary-500 focus:border-primary-500"
           />
-          {errors.fullName && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.fullName.message}
-            </p>
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
           )}
         </div>
 
@@ -106,7 +104,6 @@ export default function SettingsPage() {
             type="email"
             {...register("email")}
             className="w-full px-4 py-2 border rounded-lg focus:ring-primary-500 focus:border-primary-500"
-            disabled
           />
           {errors.email && (
             <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>

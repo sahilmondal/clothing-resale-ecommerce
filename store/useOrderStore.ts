@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from "zustand";
 
 export interface OrderItem {
@@ -46,7 +47,7 @@ const demoOrders: Order[] = [
   },
   {
     id: "1235",
-    userId: "9831737396", // Changed from email to phone
+    userId: "1234", // Changed from email to phone
     items: [
       {
         id: "p2",
@@ -64,7 +65,7 @@ const demoOrders: Order[] = [
   },
   {
     id: "1236",
-    userId: "9831737396", // Changed from email to phone
+    userId: "1234", // Changed from email to phone
     items: [
       {
         id: "p3",

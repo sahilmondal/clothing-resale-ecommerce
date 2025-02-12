@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Button } from "../../components/atoms/Button";
 import { FeatureSection } from "../../components/organisms/FeatureSection";
 

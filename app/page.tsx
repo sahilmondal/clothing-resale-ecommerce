@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Button } from "../components/atoms/Button";
 import { ProductCard } from "../components/molecules/ProductCard";
 import { FeatureSection } from "../components/organisms/FeatureSection";

@@ -1,5 +1,7 @@
 // In a real app, you would use a proper SMS service like Twilio, MSG91, etc.
-// This is a demo implementation that stores OTPs in memory
+// This is a demo implementation that stores OTPs in file system for development
+import fs from "fs";
+import path from "path";
 
 interface OTPRecord {
   otp: string;
@@ -7,7 +9,29 @@ interface OTPRecord {
   verified: boolean;
 }
 
-const otpStore: Record<string, OTPRecord> = {};
+const OTP_DIR = path.join(process.cwd(), ".otp-store");
+
+// Ensure OTP directory exists
+if (!fs.existsSync(OTP_DIR)) {
+  fs.mkdirSync(OTP_DIR, { recursive: true });
+}
+
+function getOTPPath(phone: string): string {
+  return path.join(OTP_DIR, `${phone}.json`);
+}
+
+function getStoredOTPRecord(phone: string): OTPRecord | null {
+  const otpPath = getOTPPath(phone);
+  if (!fs.existsSync(otpPath)) {
+    return null;
+  }
+  try {
+    const data = fs.readFileSync(otpPath, "utf8");
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
 
 // Generate a random 6-digit OTP
 function generateOTP(): string {
@@ -16,11 +40,12 @@ function generateOTP(): string {
 
 // Store an OTP with 5 minutes expiry
 function storeOTP(phone: string, otp: string): void {
-  otpStore[phone] = {
+  const otpRecord: OTPRecord = {
     otp,
     expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
     verified: false,
   };
+  fs.writeFileSync(getOTPPath(phone), JSON.stringify(otpRecord));
 }
 
 // Send OTP (simulated)
@@ -68,7 +93,7 @@ export function verifyOTP(
   success: boolean;
   error?: string;
 } {
-  const record = otpStore[phone];
+  const record = getStoredOTPRecord(phone);
 
   if (!record) {
     return {
@@ -85,7 +110,7 @@ export function verifyOTP(
   }
 
   if (Date.now() > record.expiresAt) {
-    delete otpStore[phone];
+    clearOTP(phone);
     return {
       success: false,
       error: "OTP expired. Please request a new one.",
@@ -101,16 +126,21 @@ export function verifyOTP(
 
   // Mark OTP as verified
   record.verified = true;
+  fs.writeFileSync(getOTPPath(phone), JSON.stringify(record));
 
   return { success: true };
 }
 
 // Clear OTP after successful verification or manual clear
 export function clearOTP(phone: string): void {
-  delete otpStore[phone];
+  const otpPath = getOTPPath(phone);
+  if (fs.existsSync(otpPath)) {
+    fs.unlinkSync(otpPath);
+  }
 }
 
 // For development: Get stored OTP (remove in production)
 export function __DEV__getStoredOTP(phone: string): string | null {
-  return otpStore[phone]?.otp || null;
+  const record = getStoredOTPRecord(phone);
+  return record?.otp || null;
 }

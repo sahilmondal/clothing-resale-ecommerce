@@ -45,7 +45,7 @@ export default function ProductsPage() {
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Filters - Desktop */}
-          <div className="hidden md:block w-64 flex-shrink-0">
+          <div className="hidden md:block max-w-64 w-full flex-shrink-0">
             <ProductFilters
               onFilterChange={handleFilterChange}
               initialFilters={filters}

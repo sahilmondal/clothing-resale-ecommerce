@@ -1,6 +1,6 @@
 import { Form } from "../../../components/molecules/Form";
 import { z } from "zod";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
